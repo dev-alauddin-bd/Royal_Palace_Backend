@@ -99,6 +99,28 @@ const getAdminOverview = async () => {
     .populate("userId", "name email")
     .lean();
 
+  /** 📌 Monthly Statistics for Charts (Last 6 Months) **/
+  const last6Months = [];
+  for (let i = 5; i >= 0; i--) {
+    const startOfMonth = dayjs().subtract(i, "month").startOf("month").toDate();
+    const endOfMonth = dayjs().subtract(i, "month").endOf("month").toDate();
+    const monthName = dayjs().subtract(i, "month").format("MMM");
+
+    const bookingsCount = await BookingModel.countDocuments({
+      createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    const revenue = await getRevenue({
+      createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    last6Months.push({
+      month: monthName,
+      bookings: bookingsCount,
+      revenue: revenue,
+    });
+  }
+
   /** 📌 Final Return **/
   return {
     role: "admin",
@@ -115,6 +137,7 @@ const getAdminOverview = async () => {
       repeatCustomers,
       newCustomers,
     },
+    monthlyStats: last6Months, // 📈 Added for charts
     bookingStatusBreakdown,
     roomTypePopularity,
     availableRoomsByCategory,
@@ -213,7 +236,31 @@ export const getGuestOverview = async (userId: string) => {
     .lean();
 
 
-  // ✅ 6. Prepare dashboard stats
+  // ✅ 6. Monthly Spending History for Charts (Last 6 Months)
+  const spendingHistory = [];
+  for (let i = 5; i >= 0; i--) {
+    const startOfMonth = dayjs().subtract(i, "month").startOf("month").toDate();
+    const endOfMonth = dayjs().subtract(i, "month").endOf("month").toDate();
+    const monthName = dayjs().subtract(i, "month").format("MMM");
+
+    const agg = await BookingModel.aggregate([
+      {
+        $match: {
+          userId: objectId,
+          bookingStatus: BookingStatus.Confirmed,
+          createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+        },
+      },
+      { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+    ]);
+
+    spendingHistory.push({
+      month: monthName,
+      amount: agg[0]?.total || 0,
+    });
+  }
+
+  // ✅ 7. Prepare dashboard stats
   const stats = [
     {
       title: "Total Paid Amount",
@@ -235,12 +282,13 @@ export const getGuestOverview = async (userId: string) => {
 
   ];
 
-  // ✅ 7. Return overview object
+  // ✅ 8. Return overview object
   return {
     role: "guest",
     stats,
     recentBookings,
     pastBookings,
+    spendingHistory, // 📈 Added for chart
   };
 };
 

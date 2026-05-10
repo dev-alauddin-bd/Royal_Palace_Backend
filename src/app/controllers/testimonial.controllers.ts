@@ -1,13 +1,16 @@
 import { Request, Response } from "express";
 import { catchAsyncHandeller } from "../utils/handeller/catchAsyncHandeller";
 import { testimonialServices } from "../services/testimonial.services";
+import sendResponse from "../utils/handeller/sendResponse";
 
 // ==============================================Create a new testimonial==========================================
 const testimonialCreate = catchAsyncHandeller(
   async (req: Request, res: Response) => {
     const body = req.body;
     const result = await testimonialServices.testimonialCreate(body);
-    res.status(201).json({
+    
+    sendResponse(res, {
+      statusCode: 201,
       success: true,
       message: "Testimonial created successfully",
       data: result,
@@ -18,15 +21,10 @@ const testimonialCreate = catchAsyncHandeller(
 //====================================================== Get all testimonials===============================================
 const findAllTestimonials = catchAsyncHandeller(
   async (req: Request, res: Response) => {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
+    const result = await testimonialServices.findAllTestimonial(req.query);
 
-    const result = await testimonialServices.findAllTestimonial({
-      page,
-      limit,
-    });
-
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "Testimonials fetched successfully",
       data: result,
@@ -39,7 +37,9 @@ const findTestimonialsByRoomId = catchAsyncHandeller(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await testimonialServices.findTestimonialByRoomId(id as string);
-    res.status(200).json({
+    
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: `Testimonials for Room ID: ${id} fetched successfully`,
       data: result,
@@ -54,7 +54,8 @@ const deleteTestimonialById = catchAsyncHandeller(
 
     const result = await testimonialServices.deleteTestimonialById(id as string);
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "Testimonial deleted successfully",
       data: result,

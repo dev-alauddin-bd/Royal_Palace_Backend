@@ -8,6 +8,7 @@ const router = Router();
 /* ================= ROUTES ================= */
 router.post("/signup", userController.regestrationUser);
 router.post("/login", userController.loginUser);
+router.post("/refresh-token", userController.refreshAccessToken);
 router.get("/", userController.getAllUsers);
 
 router.get("/singleUser", userController.getSingleUser);

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import sanitize from "mongo-sanitize";
 import { catchAsyncHandeller } from "../utils/handeller/catchAsyncHandeller";
 import { roomService } from "../services/room.services";
+import sendResponse from "../utils/handeller/sendResponse";
 
 // ---------------------------Create Room-------------------------------
 const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
@@ -20,7 +21,8 @@ const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
 
   const newRoom = await roomService.createRoom(roomData);
 
-  res.status(201).json({
+  sendResponse(res, {
+    statusCode: 201,
     success: true,
     message: "Room created successfully",
     data: newRoom,
@@ -31,25 +33,14 @@ const createRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
 const getAllRooms = catchAsyncHandeller(async (req: Request, res: Response) => {
   const query = req.query;
   const rooms = await roomService.getAllRooms(query);
-  res.status(200).json({
+  
+  sendResponse(res, {
+    statusCode: 200,
     success: true,
     message: "Rooms retrieved successfully",
     data: rooms,
   });
 });
-
-// // -------------------------------Filter All Rooms-----------------
-// const filterAllRooms = catchAsyncHandeller(async (req: Request, res: Response) => {
-//   // sanitize req.query
-//   const cleanQuery = sanitize(req.query);
-
-//   const rooms = await roomService.filterRooms(cleanQuery);
-//   res.status(200).json({
-//     success: true,
-//     message: "Rooms filtered successfully",
-//     data: rooms,
-//   });
-// });
 
 //------------------------------- Get Single Room---------------------
 const getRoomById = catchAsyncHandeller(async (req: Request, res: Response) => {
@@ -57,7 +48,9 @@ const getRoomById = catchAsyncHandeller(async (req: Request, res: Response) => {
   const cleanId = sanitize(req.params.id);
 
   const room = await roomService.getRoomById(cleanId as string);
-  res.status(200).json({
+  
+  sendResponse(res, {
+    statusCode: 200,
     success: true,
     message: "Room retrieved successfully",
     data: room,
@@ -71,7 +64,9 @@ const updateRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
   const cleanBody = sanitize(req.body);
 
   const room = await roomService.updateRoom(cleanId as string, cleanBody);
-  res.status(200).json({
+  
+  sendResponse(res, {
+    statusCode: 200,
     success: true,
     message: "Room updated successfully",
     data: room,
@@ -84,7 +79,9 @@ const deleteRoom = catchAsyncHandeller(async (req: Request, res: Response) => {
   const cleanId = sanitize(req.params.id);
 
   const room = await roomService.deleteRoom(cleanId as string);
-  res.status(200).json({
+  
+  sendResponse(res, {
+    statusCode: 200,
     success: true,
     message: "Room deleted successfully",
     data: room,
@@ -97,5 +94,4 @@ export const roomController = {
   getRoomById,
   updateRoom,
   deleteRoom,
-  // filterAllRooms,
 };

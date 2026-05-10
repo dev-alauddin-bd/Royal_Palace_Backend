@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import bcrypt from "bcryptjs";
 import sanitize from "mongo-sanitize";
 import { catchAsyncHandeller } from "../utils/handeller/catchAsyncHandeller";
+import sendResponse from "../utils/handeller/sendResponse";
 
 import {
   createAccessToken,
@@ -11,7 +11,10 @@ import { cookieOptions } from "../config/cookie";
 import { AppError } from "../error/appError";
 import { userServices } from "../services/user.services";
 import { IUser } from "../interfaces/user.interfaces";
-import { signupValidation } from "../zodValidations/v1/user.validations";
+import {
+  loginValidation,
+  signupValidation,
+} from "../zodValidations/v1/user.validations";
 
 // ================= Registration =====================
 // 1️⃣ Catch Async Handler
@@ -30,7 +33,8 @@ const regestrationUser = catchAsyncHandeller(
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    res.status(201).json({
+    sendResponse(res, {
+      statusCode: 201,
       success: true,
       message: "User registered successfully",
       data: {
@@ -44,8 +48,9 @@ const regestrationUser = catchAsyncHandeller(
 // ================= Login ======================
 const loginUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-    const email = sanitize(req.body.email);
-    const password = sanitize(req.body.password);
+    const validatedData = loginValidation.parse(req.body);
+    const email = sanitize(validatedData.email);
+    const password = sanitize(validatedData.password);
 
     const user = await userServices.loginUserByEmail(email, password);
 
@@ -58,7 +63,8 @@ const loginUser = catchAsyncHandeller(
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "Login successful",
       data: {
@@ -72,11 +78,11 @@ const loginUser = catchAsyncHandeller(
 //================================find single user=============================================
 const getSingleUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
-    console.log("🔍 Fetching user with query:", req.query);
     const query = sanitize(req.query);
     const user = await userServices.getSingleUser(query);
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "User fetched successfully",
       data: user,
@@ -88,9 +94,9 @@ const getSingleUser = catchAsyncHandeller(
 const getAllUsers = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
     const users = await userServices.getAllUsers(req.query);
-    // logger.info("All users fetched successfully");
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "All users fetched successfully",
       data: users,
@@ -105,7 +111,8 @@ const deleteUser = catchAsyncHandeller(
 
     const deletedUser = await userServices.deleteUserById(id as string);
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "User deleted successfully",
       data: deletedUser,
@@ -141,7 +148,8 @@ const updateUser = catchAsyncHandeller(
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "User updated successfully",
       data: {
@@ -168,7 +176,8 @@ export const refreshAccessToken = catchAsyncHandeller(
     const payload = { id: user._id, role: user.role };
     const accessToken = createAccessToken(payload);
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "Access token refreshed successfully",
       data: {
@@ -183,9 +192,11 @@ const logoutUser = catchAsyncHandeller(
   async (req: Request, res: Response, next: NextFunction) => {
     res.clearCookie("refreshToken", cookieOptions);
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "User logged out successfully",
+      data: null,
     });
   }
 );

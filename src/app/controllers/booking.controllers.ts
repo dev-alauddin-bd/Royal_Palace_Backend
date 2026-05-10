@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { catchAsyncHandeller } from "../utils/handeller/catchAsyncHandeller";
 import { bookingServices } from "../services/booking.services";
+import sendResponse from "../utils/handeller/sendResponse";
 
 // =====================================================Initiate Booking========================================
 
@@ -10,11 +11,15 @@ const initiateBooking = catchAsyncHandeller(
 
     const { paymentUrl, transactionId } =
       await bookingServices.bookingInitialization(bookingData);
-    res.status(200).json({
+      
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "Booking and payment initialized successfully",
-      transactionId: transactionId,
-      paymentUrl: paymentUrl,
+      data: {
+        transactionId: transactionId,
+        paymentUrl: paymentUrl,
+      },
     });
   },
 );
@@ -28,9 +33,10 @@ const checkAvailableRoomsById = catchAsyncHandeller(
       roomId as string,
     );
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
-
+      message: "Available rooms fetched successfully",
       data: blockedDates,
     });
   },
@@ -45,19 +51,27 @@ const checkbookingRoomsByUserId = catchAsyncHandeller(
       id as string,
     );
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
-
+      message: "Booked rooms fetched successfully",
       data: bookedRooms,
     });
   },
 );
+
 // =====================================filter booking===========================================
 
-const getFilteredBookings = async (req: Request, res: Response) => {
+const getFilteredBookings = catchAsyncHandeller(async (req: Request, res: Response) => {
   const result = await bookingServices.filterBookings(req.query);
-  res.status(200).json(result);
-};
+  
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "Filtered bookings fetched successfully",
+    data: result,
+  });
+});
 
 const cancelBooking = catchAsyncHandeller(
   async (req: Request, res: Response) => {
@@ -65,10 +79,11 @@ const cancelBooking = catchAsyncHandeller(
 
     const result = await bookingServices.cancelBookingService(id as string);
 
-    res.status(200).json({
-      message: "Booking has been successfully cancelled",
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
-      booking: result.booking,
+      message: "Booking has been successfully cancelled",
+      data: result.booking,
     });
   },
 );

@@ -50,5 +50,7 @@ export interface RoomQuery {
   type?: string; 
   adults?: number;
   children?: number;
+  checkInDate?: string;
+  checkOutDate?: string;
   select?: string | Record<string, 1 | 0>;
 }

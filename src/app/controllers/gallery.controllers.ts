@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { catchAsyncHandeller } from "../utils/handeller/catchAsyncHandeller";
 import { galleryService } from "../services/gallery.services";
+import sendResponse from "../utils/handeller/sendResponse";
 
 // ================================================Create gallery=============================================
 const createGallery = catchAsyncHandeller(
@@ -13,7 +14,8 @@ const createGallery = catchAsyncHandeller(
     };
 
     const result = await galleryService.createGallery(bodyData);
-    res.status(201).json({
+    sendResponse(res, {
+      statusCode: 201,
       success: true,
       message: "Gallery item created successfully",
       data: result,
@@ -25,7 +27,8 @@ const createGallery = catchAsyncHandeller(
 const getAllGalleries = catchAsyncHandeller(
   async (_req: Request, res: Response) => {
     const result = await galleryService.getAllGalleries();
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "Gallery items fetched successfully",
       data: result,
@@ -38,7 +41,8 @@ const getGalleryById = catchAsyncHandeller(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await galleryService.getGalleryById(id as string);
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "Gallery item fetched successfully",
       data: result,
@@ -51,7 +55,8 @@ const deleteGalleryById = catchAsyncHandeller(
   async (req: Request, res: Response) => {
     const { id } = req.params;
     const result = await galleryService.deleteGalleryById(id as string);
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
       message: "Gallery item deleted successfully",
       data: result,

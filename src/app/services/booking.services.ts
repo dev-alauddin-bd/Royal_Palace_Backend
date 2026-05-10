@@ -73,53 +73,35 @@ const getBookedRoomsByUserId = async (userId: string) => {
 };
 
 // ======================================= Filter Bookings ============================================
+import { genericQuery } from "../utils/queryUtils";
+
 const filterBookings = async (queryParams: any) => {
-  const {
-    searchTerm,
+  const result = await genericQuery({
+    model: BookingModel,
+    query: queryParams,
+    searchFields: ["name", "email", "phone", "transactionId"],
+    lookup: [
+      {
+        $lookup: {
+          from: "rooms",
+          localField: "rooms.roomId",
+          foreignField: "_id",
+          as: "roomDetails",
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userDetails",
+        },
+      },
+      { $unwind: "$userDetails" },
+    ],
+  });
 
-    status,
-    page = 1,
-    limit = 10,
-  } = queryParams;
-
-  const skip = (Number(page) - 1) * Number(limit);
-
-  const filters: any = {};
-
-  if (status) {
-    const statusArr = status.split(",").map((s: string) => s.trim());
-    filters.bookingStatus = { $in: statusArr };
-  }
-
-  // We don't have 'checkOutDate' at root in schema, it is inside rooms array, so this filter might not work directly.
-  // You may want to filter bookings by date range inside rooms — that requires more complex aggregation.
-  // Here just a basic filter on bookingStatus and skip/limit.
-
-  if (searchTerm) {
-    filters.$or = [
-      { name: { $regex: searchTerm, $options: "i" } },
-      { email: { $regex: searchTerm, $options: "i" } },
-      { phone: { $regex: searchTerm, $options: "i" } },
-    ];
-  }
-
-  const data = await BookingModel.find(filters)
-    .skip(skip)
-    .limit(Number(limit))
-    .sort({ createdAt: -1 })
-    .populate("rooms.roomId")
-    .populate("userId");
-
-  const total = await BookingModel.countDocuments(filters);
-
-  return {
-    meta: {
-      total,
-      page: Number(page),
-      limit: Number(limit),
-    },
-    data,
-  };
+  return result;
 };
 
 // ========================================= Cancel Booking ============================================

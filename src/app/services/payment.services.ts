@@ -56,22 +56,27 @@ const handleIPN = async (ipnData: any) => {
 // ====================================================
 // 🔹 Get Payments (Admin)
 // ====================================================
-const getPayments = async (options: any) => {
-  const query: any = {};
+import { genericQuery } from "../utils/queryUtils";
 
-  if (options?.status) {
-    query.status = sanitize(options.status);
-  }
+const getPayments = async (query: any) => {
+  const result = await genericQuery({
+    model: PaymentModel,
+    query,
+    searchFields: ["transactionId", "status"],
+    lookup: [
+      {
+        $lookup: {
+          from: "bookings",
+          localField: "bookingId",
+          foreignField: "_id",
+          as: "bookingDetails",
+        },
+      },
+      { $unwind: { path: "$bookingDetails", preserveNullAndEmptyArrays: true } },
+    ],
+  });
 
-  if (options?.userId) {
-    query.userId = sanitize(options.userId);
-  }
-
-  const payments = await PaymentModel.find(query)
-    .populate("bookingId")
-    .sort({ createdAt: -1 });
-
-  return payments;
+  return result;
 };
 
 // ====================================================

@@ -2,11 +2,11 @@ import { Request, Response } from "express";
 import { catchAsyncHandeller } from "../utils/handeller/catchAsyncHandeller";
 import { AppError } from "../error/appError";
 import { dashboardService } from "../services/dashboard.services";
+import sendResponse from "../utils/handeller/sendResponse";
 
 const getDashboardData = catchAsyncHandeller(async (req: Request, res: Response) => {
-  // const role = req.user?.role; // Role comes from authenticated user
   const role = req.user?.role;
-  const userId = req.user?._id; // Also from auth middleware
+  const userId = req.user?._id; 
 
   if (!role) {
     throw new AppError("User role is required", 400);
@@ -14,9 +14,11 @@ const getDashboardData = catchAsyncHandeller(async (req: Request, res: Response)
 
   const data = await dashboardService.dashboardOverviewByRole(role, userId);
 
-  res.status(200).json({
+  sendResponse(res, {
+    statusCode: 200,
     success: true,
-    ...data,
+    message: "Dashboard data fetched successfully",
+    data: data,
   });
 });
 

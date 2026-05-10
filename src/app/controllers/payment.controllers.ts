@@ -6,6 +6,7 @@ import PaymentModel from "../mongoSchema/payment.schema";
 import { PaymentStatus } from "../interfaces/payment.interfaces";
 import BookingModel from "../mongoSchema/booking.schema";
 import { BookingStatus } from "../interfaces/booking.interfcae";
+import sendResponse from "../utils/handeller/sendResponse";
 
 // ====================================================
 // 🔹 SSLCommerz IPN (FINAL AUTHORITY)
@@ -15,7 +16,12 @@ const handleIPN = catchAsyncHandeller(async (req: Request, res: Response) => {
   await paymentServices.handleIPN(req.body);
 
   // ⚠️ SSLCommerz expects 200 OK
-  res.status(200).json({ success: true });
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: "IPN handled successfully",
+    data: null,
+  });
 });
 
 // ====================================================
@@ -79,9 +85,6 @@ export const paymentSuccess = catchAsyncHandeller(
 
     <h1>Payment Successful</h1>
     <p>Your payment has been received successfully.</p>
-
-  
-  
 
     <a href="https://royal-place.vercel.app/dashboard/user/bookings">
       Go to My Bookings
@@ -174,8 +177,10 @@ const paymentCancel = catchAsyncHandeller(
 const getPayments = catchAsyncHandeller(async (req: Request, res: Response) => {
   const payments = await paymentServices.getPayments(req.query);
 
-  res.status(200).json({
+  sendResponse(res, {
+    statusCode: 200,
     success: true,
+    message: "Payments fetched successfully",
     data: payments,
   });
 });
@@ -192,8 +197,10 @@ const getMyPayments = catchAsyncHandeller(
       userId.toString(),
     );
 
-    res.status(200).json({
+    sendResponse(res, {
+      statusCode: 200,
       success: true,
+      message: "My payments fetched successfully",
       data: payments,
     });
   },

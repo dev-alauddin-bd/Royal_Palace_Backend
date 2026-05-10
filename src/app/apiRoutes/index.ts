@@ -6,7 +6,8 @@ import { paymentRoute } from "../routes/payment.route";
 import { roomRoute } from "../routes/room.route";
 import { testimonialRoute } from "../routes/testimonial.route";
 import { dashboardRoute } from "../routes/dashboard.route";
-import { serviceRoute } from "../routes/amenitie.route";
+import { teamRoute } from "../routes/team.route";
+
 
 // -------------------
 // 1. Route Interface
@@ -24,9 +25,10 @@ export const routesV1: IRouteV1[] = [
   { path: "/rooms", handler: roomRoute },
   { path: "/bookings", handler: bookingRoute },
   { path: "/payments", handler: paymentRoute },
-  { path: "/services", handler: serviceRoute },
+
   { path: "/testimonials", handler: testimonialRoute },
   { path: "/dashboards", handler: dashboardRoute },
+  { path: "/teams", handler: teamRoute },
 ];
 
 // -------------------

@@ -4,6 +4,7 @@ import { AppError } from "../error/appError";
 import { genericQuery } from "../utils/queryUtils";
 import { IRoom, RoomQuery } from "../interfaces/room.interfaces";
 import RoomModel from "../mongoSchema/room.schema";
+import BookingModel from "../mongoSchema/booking.schema";
 import { redis } from "../config/redis";
 
 // Helper to clear related caches
@@ -54,11 +55,43 @@ export const getAllRooms = async (query: RoomQuery) => {
 
   const totalGuests = Number(query.adults || 0) + Number(query.children || 0);
   const filters: any = { roomStatus: "active" };
+  
   if (totalGuests > 0) filters.maxOccupancy = { $gte: totalGuests };
+  
   if (query.type) {
     filters.type = {
       $in: query.type.split(",").map((t) => t.trim().toLowerCase()),
     };
+  }
+
+  // 🕒 Handle Date Availability (Real Logic)
+  if (query.checkInDate && query.checkOutDate) {
+    const checkIn = new Date(query.checkInDate);
+    const checkOut = new Date(query.checkOutDate);
+
+    // Find all bookings that overlap with requested dates
+    const overlappingBookings = await BookingModel.find({
+      bookingStatus: { $in: ["CONFIRMED", "PENDING"] },
+      "rooms": {
+        $elemMatch: {
+          $or: [
+            { 
+              checkInDate: { $lt: checkOut },
+              checkOutDate: { $gt: checkIn }
+            }
+          ]
+        }
+      }
+    }).select("rooms.roomId");
+
+    // Extract unique room IDs that are already booked
+    const bookedRoomIds = overlappingBookings.flatMap(booking => 
+      booking.rooms.map(r => r.roomId.toString())
+    );
+
+    if (bookedRoomIds.length > 0) {
+      filters._id = { $nin: bookedRoomIds };
+    }
   }
 
   const result = await genericQuery({

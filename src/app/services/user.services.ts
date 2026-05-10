@@ -35,7 +35,7 @@ const registerUserIntoDb = async (body: IUser) => {
 
 // ================================= Login user =================================
 const loginUserByEmail = async (email: string, password: string) => {
-  const user = await UserModel.findOne({ email });
+  const user = await UserModel.findOne({ email, isDeleted: false });
 
   if (!user) throw new AppError("User does not exist!", 404);
 

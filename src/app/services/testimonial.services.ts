@@ -31,22 +31,28 @@ const testimonialCreate = async (data: ITestimonial) => {
 
 //============================================== Get all testimonials sorted by newest==============================================
 
-const findAllTestimonial = async ({
-  page = 1,
-  limit = 10,
-}: {
-  page?: number;
-  limit?: number;
-}) => {
-  const skip = (page - 1) * limit;
+import { genericQuery } from "../utils/queryUtils";
 
-  const testimonials = await testimonialModel
-    .find()
-    .sort({ _id: -1 })
-    .skip(skip)
-    .limit(limit);
+const findAllTestimonial = async (query: Record<string, any>) => {
+  const result = await genericQuery({
+    model: testimonialModel,
+    query,
+    searchFields: ["comment"],
+    lookup: [
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "userInfo",
+        },
+      },
+      { $unwind: "$userInfo" },
+    ],
+    select: "comment rating createdAt userInfo.name userInfo.avatar",
+  });
 
-  return testimonials;
+  return result;
 };
 
 // ========================================Get testimonials by room ID====================================================
