@@ -16,9 +16,6 @@ export const envVariable = {
   FAIL_URL: process.env.FAIL_URL || "",
   CANCEL_URL: process.env.CANCEL_URL || "",
 
-  // ML Cancel Prediction API
-  ML_CANCEL_PREDICT_API: process.env.ML_CANCEL_PREDICT_API,
-
   // JWT Secrets and Expiry
   JWT_ACCESS_TOKEN_SECRET: process.env.JWT_ACCESS_TOKEN_SECRET!,
   JWT_REFRESH_TOKEN_SECRET: process.env.JWT_REFRESH_TOKEN_SECRET!,
@@ -30,4 +27,5 @@ export const envVariable = {
     "7d") as `${number}${"s" | "m" | "h" | "d"}`,
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
   STRIPE_PUBLISHABLE_KEY:process.env.STRIPE_PUBLISHABLE_KEY,
+  FIREBASE_SERVICE_ACCOUNT: process.env.FIREBASE_SERVICE_ACCOUNT,
 };

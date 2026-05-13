@@ -15,7 +15,7 @@ export interface IUser extends Document {
   role: UserRole;
   isDeleted: boolean;
   createdAt: Date;
-
+  firebaseUID?: string
   phone?: string;
 }
 

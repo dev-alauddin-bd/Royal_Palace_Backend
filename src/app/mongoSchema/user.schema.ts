@@ -20,9 +20,12 @@ const userSchema = new Schema<IUser>(
       trim: true,
       index: true,
     },
+    firebaseUID: {
+      type: String,
+      required: false,
+    },
     password: {
       type: String,
-      required: [true, "Password is required"],
     },
     role: {
       type: String,

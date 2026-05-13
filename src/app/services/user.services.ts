@@ -28,7 +28,7 @@ const registerUserIntoDb = async (body: IUser) => {
 
   const newUser = await UserModel.create(cleanBody);
 
-  
+
   logger.info(`✅ New user registered: ${newUser.email}`);
   return newUser;
 };
@@ -47,7 +47,7 @@ const loginUserByEmail = async (email: string, password: string) => {
 };
 
 // ================================= Find single user =================================
-const getSingleUser = async (query:{name?: string, email?: string}) => {
+const getSingleUser = async (query: { name?: string, email?: string }) => {
 
   // sanitize input
   const sanitizedQuery = sanitize(query);
@@ -88,7 +88,7 @@ const getAllUsers = async (query: IUserQuery) => {
     // select: "name email phone",
   });
 
- 
+
   return result;
 };
 
@@ -102,7 +102,7 @@ const deleteUserById = async (id: string) => {
   user.isDeleted = true;
   await user.save();
 
- 
+
   return user;
 };
 
@@ -152,6 +152,39 @@ const requestRefreshToken = async (refreshToken: string) => {
   }
 };
 
+// ================================= Firebase Login =================================
+const findOrCreateFromFirebase = async ({
+  firebaseUid,
+  email,
+  name,
+  picture,
+}: {
+  firebaseUid: string;
+  email: string;
+  name: string;
+  picture?: string;
+}) => {
+  // Try to find existing user by Firebase UID
+  let user = await UserModel.findOne({ firebaseUid });
+
+  if (!user) {
+    // If not found, create a new user
+    const randomPassword = Math.random().toString(36).slice(-10);
+    user = await UserModel.create({
+      firebaseUid,
+      email,
+      name,
+      image: picture || undefined,
+      password: randomPassword, // pre-save hook will hash it
+      role: 'guest',
+    });
+    logger.info(`✅ New user created via Firebase: ${email}`);
+  }
+
+  const { password: _, ...userWithoutPassword } = user.toObject();
+  return userWithoutPassword;
+};
+
 // ============================== Export Services ==============================
 export const userServices = {
   registerUserIntoDb,
@@ -161,4 +194,5 @@ export const userServices = {
   deleteUserById,
   updateUserById,
   requestRefreshToken,
+  findOrCreateFromFirebase,
 };

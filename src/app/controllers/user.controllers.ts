@@ -2,7 +2,9 @@ import { NextFunction, Request, Response } from "express";
 import sanitize from "mongo-sanitize";
 import { catchAsyncHandeller } from "../utils/handeller/catchAsyncHandeller";
 import sendResponse from "../utils/handeller/sendResponse";
-
+import jwt from "jsonwebtoken"
+import admin from "../config/firebase"
+import UserModel from "../mongoSchema/user.schema"
 import {
   createAccessToken,
   createRefreshToken,
@@ -201,6 +203,69 @@ const logoutUser = catchAsyncHandeller(
   }
 );
 
+
+
+
+const firebaseLogin = catchAsyncHandeller(async (req: Request, res: Response) => {
+  const { idToken } = req.body
+  console.log(req.body)
+  if (!idToken) {
+    return res.status(400).json({
+      success: false,
+      message: "ID Token is required",
+    })
+  }
+
+  // ✅ verify firebase token
+  const decoded = await admin.auth().verifyIdToken(idToken)
+
+  const email = decoded.email
+  const uid = decoded.uid
+  const name = decoded.name || ""
+  const picture = decoded.picture || ""
+
+  if (!email || !uid) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid Firebase token",
+    })
+  }
+
+  // ✅ find or create user
+  let user = await UserModel.findOne({ email })
+
+  if (!user) {
+    user = await UserModel.create({
+      email,
+      firebaseUID: uid,
+      name,
+      avatar: picture,
+      provider: "google",
+    })
+  }
+
+  // optional update uid
+  if (!user.firebaseUID) {
+    user.firebaseUID = uid
+    await user.save()
+  }
+
+  // ✅ JWT
+  const accessToken = jwt.sign(
+    { userId: user._id, role: user.role },
+    process.env.JWT_ACCESS_TOKEN_SECRET!,
+    { expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRES_IN! as `${number}${"s" | "m" | "h" | "d"}` }
+  )
+
+  return res.status(200).json({
+    success: true,
+    data: {
+      user,
+      accessToken,
+    },
+  })
+})
+
 // ======================export controller===============================================
 export const userController = {
   regestrationUser,
@@ -211,4 +276,5 @@ export const userController = {
   updateUser,
   refreshAccessToken,
   logoutUser,
+  firebaseLogin
 };

@@ -7,6 +7,7 @@ import { roomRoute } from "../routes/room.route";
 import { testimonialRoute } from "../routes/testimonial.route";
 import { dashboardRoute } from "../routes/dashboard.route";
 import { teamRoute } from "../routes/team.route";
+import { authRoute } from "../routes/auth.route";
 
 
 // -------------------
@@ -29,6 +30,7 @@ export const routesV1: IRouteV1[] = [
   { path: "/testimonials", handler: testimonialRoute },
   { path: "/dashboards", handler: dashboardRoute },
   { path: "/teams", handler: teamRoute },
+  { path: "/auth", handler: authRoute },
 ];
 
 // -------------------
