@@ -26,7 +26,7 @@ export const getDateRangeArray = (
   const dates: string[] = [];
   let currentDate = start;
 
-  while (currentDate.isSameOrBefore(end)) {
+  while (currentDate.isBefore(end)) {
     dates.push(currentDate.format("YYYY-MM-DD"));
     currentDate = currentDate.add(1, "day");
   }

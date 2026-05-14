@@ -18,8 +18,8 @@ export const checkConflictedRooms = async (
     const overlappingBooking = await BookingModel.findOne({
       "rooms.roomId": room.roomId,
       bookingStatus: BookingStatus.Confirmed,
-      "rooms.checkInDate": { $lte: room.checkOutDate },
-      "rooms.checkOutDate": { $gte: room.checkInDate },
+      "rooms.checkInDate": { $lt: room.checkOutDate },
+      "rooms.checkOutDate": { $gt: room.checkInDate },
     });
 
     if (overlappingBooking) {

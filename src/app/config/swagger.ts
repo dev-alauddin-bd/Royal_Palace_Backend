@@ -10,10 +10,10 @@ export const swaggerDoc = (app: Application) => {
         title: "Royal Palace Hotel Booking API Documentation",
         version: "1.0.0",
       },
-      servers: [{ url: "http://localhost:5000" , description: "Development Server"}],
+      servers: [{ url: "http://localhost:5000", description: "Development Server" }],
     },
 
-    apis: ["./src/app/routes/v1/**/*route.ts"], // files containing annotations as above
+    apis: ["./src/app/routes/**/*route.ts"], // files containing annotations as above
   };
 
   const openapiSpecification = swaggerJsdoc(options);

@@ -13,15 +13,15 @@ import { authRoute } from "../routes/auth.route";
 // -------------------
 // 1. Route Interface
 // -------------------
-interface IRouteV1 {
+interface IRoute {
   path: string;
   handler: Router;
 }
 
 // -------------------
-// 2. All v1 routes
+// 2. All routes
 // -------------------
-export const routesV1: IRouteV1[] = [
+export const routes: IRoute[] = [
   { path: "/users", handler: userRoute },
   { path: "/rooms", handler: roomRoute },
   { path: "/bookings", handler: bookingRoute },
@@ -37,7 +37,7 @@ export const routesV1: IRouteV1[] = [
 // 3. Register main routes with common prefix
 // -------------------
 export const mainRoutes = (app: Application, apiPrefix = "/api") => {
-  routesV1.forEach((route) => {
+  routes.forEach((route) => {
     app.use(`${apiPrefix}${route.path}`, route.handler);
   });
 };

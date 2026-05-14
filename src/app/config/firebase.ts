@@ -1,14 +1,13 @@
 import admin from "firebase-admin"
-import dotenv from "dotenv";
-dotenv.config();
-const projectId = process.env.FIREBASE_PROJECT_ID
-const clientEmail = process.env.FIREBASE_CLIENT_EMAIL
-const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(
+import { envVariable } from "./index";
+
+const projectId = envVariable.FIREBASE_PROJECT_ID
+const clientEmail = envVariable.FIREBASE_CLIENT_EMAIL
+const privateKey = envVariable.FIREBASE_PRIVATE_KEY?.replace(
   /\\n/g,
   "\n"
 )
 
-// console.log(projectId, clientEmail, privateKey)
 if (!projectId || !clientEmail || !privateKey) {
   throw new Error("Missing Firebase environment variables")
 }

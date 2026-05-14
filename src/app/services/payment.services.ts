@@ -1,6 +1,4 @@
 import sanitize from "mongo-sanitize";
-import dotenv from "dotenv";
-import SSLCommerzPayment from "sslcommerz-lts";
 
 import PaymentModel from "../mongoSchema/payment.schema";
 import BookingModel from "../mongoSchema/booking.schema";

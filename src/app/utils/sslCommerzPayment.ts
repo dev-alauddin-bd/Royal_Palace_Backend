@@ -1,6 +1,7 @@
 import SSLCommerzPayment from "sslcommerz-lts";
 import { AppError } from "../error/appError";
 import { IBooking } from "../interfaces/booking.interfcae";
+import { envVariable } from "../config";
 
 export const sslcommerzPaymentInit = async (booking: IBooking) => {
 
@@ -9,10 +10,10 @@ export const sslcommerzPaymentInit = async (booking: IBooking) => {
     currency: "BDT",
     tran_id: String(booking.transactionId),
 
-    success_url: `${process.env.BASE_URL}/api/v1/payments/success?tran_id=${booking.transactionId}`,
-    fail_url: `${process.env.BASE_URL}/api/v1/payments/fail`,
-    cancel_url: `${process.env.BASE_URL}/api/v1/payments/cancel`,
-    ipn_url: `${process.env.BASE_URL}/api/v1/payments/ipn`,
+    success_url: `${envVariable.SUCCESS_URL}?tran_id=${booking.transactionId}`,
+    fail_url: envVariable.FAIL_URL,
+    cancel_url: envVariable.CANCEL_URL,
+    ipn_url: `${envVariable.BASE_URL}/api/payments/ipn`,
 
     product_name: "Hotel Room Booking",
     product_category: "Hotel",
@@ -36,20 +37,18 @@ export const sslcommerzPaymentInit = async (booking: IBooking) => {
     value_a: booking._id?.toString(),
     value_b: booking.userId?.toString(),
   };
-  // console.log("2nd hit")
 
   const sslcz = new SSLCommerzPayment(
-    process.env.SSL_STORE_ID!,
-    process.env.SSL_STORE_PASS!,
-    process.env.SSL_IS_LIVE === "true",
+    envVariable.SSL_STORE_ID,
+    envVariable.SSL_STORE_PASS,
+    envVariable.SSL_IS_LIVE,
   );
+  
   const response = (await sslcz.init(paymentData)) as {
     status: string;
     GatewayPageURL?: string;
     failedreason?: string;
   };
-
-  console.log(response);
 
   if (response.status === "FAILED") {
     throw new AppError(
