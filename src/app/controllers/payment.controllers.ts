@@ -30,8 +30,8 @@ const handleIPN = catchAsyncHandeller(async (req: Request, res: Response) => {
 // ====================================================
 export const paymentSuccess = catchAsyncHandeller(
   async (req: Request, res: Response) => {
-    // SSLCommerz fallback
-    const tranId = req.query.tran_id || Object.keys(req.query)[0];
+    // SSLCommerz sends POST data
+    const tranId = req.body?.tran_id || req.query?.tran_id || Object.keys(req.query)[0];
     if (!tranId) {
       return res.status(400).send("Invalid transaction");
     }

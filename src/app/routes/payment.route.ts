@@ -8,7 +8,7 @@ const router = express.Router();
 router.get("/my",authenticateUser, paymentController.getMyPayments);
 
 // SSLCommerz callbacks
-// router.post("/ipn", paymentController.handleIPN);
+router.post("/ipn", paymentController.handleIPN);
 router.post("/success", paymentController.paymentSuccess);
 router.post("/fail", paymentController.paymentFail);
 router.post("/cancel", paymentController.paymentCancel);

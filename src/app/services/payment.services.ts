@@ -5,7 +5,7 @@ import SSLCommerzPayment from "sslcommerz-lts";
 import PaymentModel from "../mongoSchema/payment.schema";
 import BookingModel from "../mongoSchema/booking.schema";
 import { AppError } from "../error/appError";
-import { PaymentStatus } from "../interfaces/payment.interfaces";
+import { BookingStatus } from "../interfaces/booking.interfcae";
 
 
 
@@ -23,7 +23,7 @@ const handleIPN = async (ipnData: any) => {
   if (status === "VALID") {
     await BookingModel.findOneAndUpdate(
       { transactionId: tranId },
-      { paymentStatus: "PAID" },
+      { bookingStatus: BookingStatus.Confirmed },
     );
 
     await PaymentModel.findOneAndUpdate(
@@ -38,7 +38,7 @@ const handleIPN = async (ipnData: any) => {
   if (status === "FAILED") {
     await BookingModel.findOneAndUpdate(
       { transactionId: tranId },
-      { paymentStatus: "FAILED" },
+      { bookingStatus: BookingStatus.Cancelled },
     );
 
     await PaymentModel.findOneAndUpdate(

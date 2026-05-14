@@ -5,9 +5,9 @@ import { IBooking } from "../interfaces/booking.interfcae";
 export const sslcommerzPaymentInit = async (booking: IBooking) => {
 
   const paymentData = {
-    total_amount: booking.totalAmount, 
+    total_amount: Number(booking.totalAmount), 
     currency: "BDT",
-    tran_id: booking.transactionId,
+    tran_id: String(booking.transactionId),
 
     success_url: `${process.env.BASE_URL}/api/v1/payments/success?tran_id=${booking.transactionId}`,
     fail_url: `${process.env.BASE_URL}/api/v1/payments/fail`,
@@ -21,25 +21,27 @@ export const sslcommerzPaymentInit = async (booking: IBooking) => {
     hotel_name: "Royal Palace",
     length_of_stay: `${booking.nights} nights`,
     check_in_time: "12:00 PM",
-    hotel_city: booking.city,
+    hotel_city: String(booking.city),
 
-    cus_name: booking.name,
-    cus_email: booking.email,
-    cus_phone: booking.phone,
-    cus_city: booking.city,
+    cus_name: String(booking.name),
+    cus_email: String(booking.email),
+    cus_phone: String(booking.phone),
+    cus_add1: String(booking.address),
+    cus_city: String(booking.city),
+    cus_postcode: String(booking.postcode),
     cus_country: "Bangladesh",
 
     shipping_method: "NO",
 
-    value_a: booking._id,
-    value_b: booking.userId,
+    value_a: booking._id?.toString(),
+    value_b: booking.userId?.toString(),
   };
   // console.log("2nd hit")
 
   const sslcz = new SSLCommerzPayment(
     process.env.SSL_STORE_ID!,
     process.env.SSL_STORE_PASS!,
-    false,
+    process.env.SSL_IS_LIVE === "true",
   );
   const response = (await sslcz.init(paymentData)) as {
     status: string;

@@ -115,8 +115,6 @@ const cancelBookingService = async (bookingId: string) => {
     );
 
     if (!booking) {
-      await session.abortTransaction();
-      session.endSession();
       return {
         success: false,
         statusCode: 404,
@@ -125,8 +123,6 @@ const cancelBookingService = async (bookingId: string) => {
     }
 
     if (booking.bookingStatus !== BookingStatus.Confirmed) {
-      await session.abortTransaction();
-      session.endSession();
       return {
         success: false,
         statusCode: 400,
@@ -146,7 +142,6 @@ const cancelBookingService = async (bookingId: string) => {
     );
 
     await session.commitTransaction();
-    session.endSession();
 
     return {
       success: true,
@@ -154,9 +149,12 @@ const cancelBookingService = async (bookingId: string) => {
       payment,
     };
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     throw error;
+  } finally {
+    await session.endSession();
   }
 };
 
@@ -231,7 +229,6 @@ const bookingInitialization = async (bookingData: IBooking) => {
 
     //Commit transaction
     await session.commitTransaction();
-    session.endSession();
 
 
 
@@ -247,6 +244,7 @@ const bookingInitialization = async (bookingData: IBooking) => {
       transactionId,
       nights,
       userId,
+      _id: booking[0]._id,
     };
 
     const { paymentUrl } = await sslcommerzPaymentInit(
@@ -258,9 +256,12 @@ const bookingInitialization = async (bookingData: IBooking) => {
       paymentUrl,
     };
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    if (session.inTransaction()) {
+      await session.abortTransaction();
+    }
     throw error;
+  } finally {
+    await session.endSession();
   }
 };
 
