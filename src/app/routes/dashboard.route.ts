@@ -7,10 +7,22 @@ const router = express.Router();
 
 // ✅ Only one dashboard route (role-based)
 router.get(
-  "/",
+  "/admin",
   authenticateUser,
-  authorizeRoles("admin", "guest", "receptonist"),
-  dashboardController.getDashboardData
+  authorizeRoles("admin"),
+  dashboardController.getAdminDashboard
+);
+router.get(
+  "/receptionist",
+  authenticateUser,
+  authorizeRoles("receptionist"),
+  dashboardController.getReceptionistDashboard
+);
+router.get(
+  "/guest",
+  authenticateUser,
+  authorizeRoles("guest"),
+  dashboardController.getGuestDashboard
 );
 
 export const dashboardRoute = router;

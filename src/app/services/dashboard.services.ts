@@ -7,7 +7,7 @@ import RoomModel from "../mongoSchema/room.schema";
 
 // ===== Admin Overview =====
 
-const getAdminOverview = async () => {
+export const getAdminOverview = async () => {
   const todayStart = dayjs().startOf("day").toDate();
   const monthStart = dayjs().startOf("month").toDate();
   const yearStart = dayjs().startOf("year").toDate();
@@ -149,17 +149,20 @@ const getAdminOverview = async () => {
 
 
 // ===== Receptionist Overview =====
-const getReceptionistOverview = async () => {
+export const getReceptionistOverview = async () => {
   const today = dayjs().startOf("day").toDate();
   const todaysBookings = await BookingModel.countDocuments({ createdAt: { $gte: today } });
   const checkedInGuests = await BookingModel.countDocuments({ bookingStatus: BookingStatus.Confirmed });
   const availableRooms = await RoomModel.countDocuments({ status: "available" });
+  const totalRooms = await RoomModel.countDocuments();
+  const occupiedRooms = await RoomModel.countDocuments({ status: "occupied" });
 
-  const stats = [
-    { title: "Today's Bookings", value: todaysBookings.toString(), change: "+5%", icon: "Calendar", color: "text-amber-400" },
-    { title: "Checked-in Guests", value: checkedInGuests.toString(), change: "+10%", icon: "Users", color: "text-purple-400" },
-    { title: "Available Rooms", value: availableRooms.toString(), change: "-5%", icon: "Bed", color: "text-emerald-400" },
-  ];
+  const stats = {
+    todaysBookings,
+    checkedInGuests,
+    availableRooms,
+    occupancyRate: totalRooms > 0 ? ((occupiedRooms / totalRooms) * 100).toFixed(2) + "%" : "0%",
+  };
 
   const recentBookings = await BookingModel.find({
     bookingStatus: { $in: [BookingStatus.Confirmed, BookingStatus.Pending] },
@@ -170,7 +173,37 @@ const getReceptionistOverview = async () => {
     .populate("userId", "name email")
     .lean();
 
-  return { role: "receptionist", stats, recentBookings };
+  /** 📌 Monthly Statistics for Charts (Last 6 Months) **/
+  const last6Months = [];
+  const getRevenue = async (filter: object) => {
+    const agg = await BookingModel.aggregate([
+      { $match: { bookingStatus: BookingStatus.Confirmed, ...filter } },
+      { $group: { _id: null, total: { $sum: "$totalAmount" } } },
+    ]);
+    return agg[0]?.total || 0;
+  };
+
+  for (let i = 5; i >= 0; i--) {
+    const startOfMonth = dayjs().subtract(i, "month").startOf("month").toDate();
+    const endOfMonth = dayjs().subtract(i, "month").endOf("month").toDate();
+    const monthName = dayjs().subtract(i, "month").format("MMM");
+
+    const bookingsCount = await BookingModel.countDocuments({
+      createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    const revenue = await getRevenue({
+      createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+    });
+
+    last6Months.push({
+      month: monthName,
+      bookings: bookingsCount,
+      revenue: revenue,
+    });
+  }
+
+  return { role: "receptionist", stats, recentBookings, monthlyStats: last6Months };
 };
 
 
@@ -293,7 +326,7 @@ export const getGuestOverview = async (userId: string) => {
 };
 
 
-export default getGuestOverview;
+// export default removed; functions are exported individually
 
 
 
@@ -319,6 +352,8 @@ export const dashboardOverviewByRole = async (role: string, userId?: string) => 
 
 // ===== Export final dashboard service =====
 export const dashboardService = {
-
+  getAdminOverview,
+  getReceptionistOverview,
+  getGuestOverview,
   dashboardOverviewByRole,
 };
